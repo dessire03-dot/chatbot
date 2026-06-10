@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistente Virtual — Clínica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+:root{--bg:#f7f8fa;--surface:#fff;--border:#e4e7ec;--primary:#1a7f5e;--primary-light:#e8f5f0;--primary-text:#0f5940;--info:#2563eb;--info-light:#eff6ff;--warn:#d97706;--warn-light:#fffbeb;--danger:#dc2626;--text:#111827;--text-2:#6b7280;--text-3:#9ca3af;--radius:12px;--radius-sm:8px;--shadow:0 1px 4px rgba(0,0,0,.08);--shadow-md:0 4px 16px rgba(0,0,0,.10);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.header{background:var(--primary);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.15);position:sticky;top:0;z-index:100;}
+.header-brand{display:flex;align-items:center;gap:10px;}
+.header-logo{width:34px;height:34px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.header-logo i{font-size:18px;color:#fff;}
+.header-name{font-size:15px;font-weight:600;color:#fff;}
+.header-sub{font-size:11px;color:rgba(255,255,255,.7);}
+.header-status{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.85);}
+.dot{width:8px;height:8px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.layout{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 58px);}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:16px 12px;display:flex;flex-direction:column;gap:4px;}
+.nav-btn{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);cursor:pointer;border:none;background:transparent;color:var(--text-2);font-size:13px;font-family:inherit;width:100%;text-align:left;transition:all .15s;}
+.nav-btn:hover{background:var(--bg);color:var(--text);}
+.nav-btn.active{background:var(--primary-light);color:var(--primary-text);font-weight:500;}
+.nav-btn i{font-size:17px;flex-shrink:0;}
+.nav-divider{height:1px;background:var(--border);margin:8px 0;}
+.main{padding:24px;overflow-y:auto;}
+.tab{display:none;max-width:760px;}
+.tab.active{display:block;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow);}
+.card-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.card-sub{font-size:12px;color:var(--text-2);margin-bottom:16px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+label{font-size:12px;color:var(--text-2);font-weight:500;}
+input,textarea,select{font-family:inherit;font-size:13px;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;width:100%;transition:border-color .15s;}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--primary);}
+textarea{resize:none;}
+.btn{font-family:inherit;font-size:13px;font-weight:500;padding:8px 16px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid transparent;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary);}
+.btn-primary:hover{background:var(--primary-text);}
+.btn-ghost{background:transparent;color:var(--text-2);border-color:var(--border);}
+.btn-ghost:hover{background:var(--bg);color:var(--text);}
+.btn-green{background:var(--primary-light);color:var(--primary-text);border-color:transparent;}
+.btn-green:hover{background:#d1ede3;}
+.btn-sm{font-size:12px;padding:5px 10px;}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:3px 8px;border-radius:20px;}
+.badge-green{background:var(--primary-light);color:var(--primary-text);}
+.badge-blue{background:var(--info-light);color:var(--info);}
+.badge-warn{background:var(--warn-light);color:var(--warn);}
+.badge-red{background:#fee2e2;color:var(--danger);}
+/* SERVICE SECTIONS */
+.svc-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
+.svc-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;background:var(--bg);}
+.svc-header:hover{background:#eef0f3;}
+.svc-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text);}
+.svc-body{padding:16px 18px;border-top:1px solid var(--border);display:none;}
+.svc-body.open{display:block;}
+/* CHAT */
+.chat-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-md);}
+.chat-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.chat-avatar{width:36px;height:36px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.chat-avatar i{font-size:18px;color:var(--primary);}
+.chat-messages{padding:16px;display:flex;flex-direction:column;gap:10px;min-height:240px;max-height:380px;overflow-y:auto;background:var(--bg);}
+.msg-bot{align-self:flex-start;max-width:80%;background:var(--surface);border-radius:4px 14px 14px 14px;padding:10px 14px;font-size:13px;color:var(--text);line-height:1.6;box-shadow:var(--shadow);}
+.msg-user{align-self:flex-end;max-width:80%;background:var(--primary);border-radius:14px 4px 14px 14px;padding:10px 14px;font-size:13px;color:#fff;line-height:1.6;}
+.msg-img{max-width:200px;border-radius:8px;margin-top:6px;display:block;}
+.msg-copy{font-size:11px;padding:2px 7px;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-3);margin-top:6px;display:inline-flex;align-items:center;gap:3px;}
+.wa-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;padding:5px 11px;border-radius:8px;background:#dcfce7;color:#15803d;cursor:pointer;border:none;margin-top:6px;}
+.wa-num{font-size:11px;color:var(--text-3);margin-top:4px;}
+.chat-input-row{padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;}
+.chat-input{flex:1;resize:none;max-height:100px;overflow-y:auto;border-radius:10px;}
+.img-preview{max-width:80px;max-height:60px;border-radius:6px;object-fit:cover;}
+.quick-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.redir-item{padding:14px 0;border-bottom:1px solid var(--border);}
+.redir-item:last-child{border-bottom:none;}
+.cita-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+.cita-row:last-child{border-bottom:none;}
+.faq-item{background:var(--bg);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px;}
+.msg-template{background:var(--bg);border-left:3px solid var(--primary);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:12px 14px;font-size:13px;line-height:1.7;color:var(--text);white-space:pre-wrap;}
+.msg-edit-area{width:100%;font-size:13px;line-height:1.7;border-radius:var(--radius-sm);padding:10px 12px;resize:none;display:none;}
+.step{display:flex;gap:12px;margin-bottom:14px;}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--primary-light);color:var(--primary-text);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-text{font-size:13px;color:var(--text);line-height:1.6;}
+.code-block{background:#1e2433;color:#e2e8f0;border-radius:var(--radius-sm);padding:14px 16px;font-family:'Courier New',monospace;font-size:12px;line-height:1.8;margin:10px 0;overflow-x:auto;}
+.alert{border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;display:flex;gap:8px;align-items:flex-start;margin-bottom:14px;}
+.alert-green{background:var(--primary-light);color:var(--primary-text);}
+.alert-blue{background:var(--info-light);color:var(--info);}
+.alert-warn{background:var(--warn-light);color:var(--warn);}
+.save-ok{font-size:12px;color:var(--primary);display:none;margin-top:8px;}
+.file-status{font-size:11px;color:var(--text-2);}
+.human-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;background:#fee2e2;color:var(--danger);font-weight:500;margin-top:6px;}
+@media(max-width:700px){.layout{grid-template-columns:1fr;}.sidebar{flex-direction:row;overflow-x:auto;padding:10px;border-right:none;border-bottom:1px solid var(--border);gap:2px;}.nav-btn{white-space:nowrap;padding:7px 10px;font-size:12px;}.form-grid{grid-template-columns:1fr;}.main{padding:14px;}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-brand">
+    <div class="header-logo"><i class="ti ti-building-hospital"></i></div>
+    <div>
+      <div class="header-name" id="header-name">Asistente Virtual</div>
+      <div class="header-sub">Panel de administración</div>
+    </div>
+  </div>
+  <div class="header-status"><div class="dot"></div> En línea</div>
+</header>
+<div class="layout">
+  <nav class="sidebar">
+    <button class="nav-btn active" data-tab="info" onclick="ST('info')"><i class="ti ti-building-hospital"></i> Clínica</button>
+    <button class="nav-btn" data-tab="servicios" onclick="ST('servicios')"><i class="ti ti-layout-list"></i> Servicios</button>
+    <button class="nav-btn" data-tab="redir" onclick="ST('redir')"><i class="ti ti-brand-whatsapp"></i> Redirección</button>
+    <button class="nav-btn" data-tab="chat" onclick="ST('chat')"><i class="ti ti-message-circle"></i> Chatbot</button>
+    <button class="nav-btn" data-tab="citas" onclick="ST('citas')"><i class="ti ti-calendar-plus"></i> Citas</button>
+    <button class="nav-btn" data-tab="faq" onclick="ST('faq')"><i class="ti ti-help-circle"></i> FAQ</button>
+    <div class="nav-divider"></div>
+    <button class="nav-btn" data-tab="mensajes" onclick="ST('mensajes')"><i class="ti ti-messages"></i> Mensajes</button>
+    <button class="nav-btn" data-tab="wa" onclick="ST('wa')"><i class="ti ti-brand-whatsapp"></i> WhatsApp</button>
+    <button class="nav-btn" data-tab="correo" onclick="ST('correo')"><i class="ti ti-mail"></i> Correos</button>
+    <button class="nav-btn" data-tab="guia" onclick="ST('guia')"><i class="ti ti-rocket"></i> Publicar</button>
+  </nav>
+  <main class="main">
+
+    <!-- INFO -->
+    <div id="tab-info" class="tab active">
+      <div class="card">
+        <div class="card-title">Información general de tu clínica</div>
+        <div class="card-sub">Esta información la usará el chatbot para responder a los pacientes.</div>
+        <div class="form-grid">
+          <div class="form-group" style="margin-bottom:0"><label>Nombre de la clínica</label><input id="f-nombre" type="text" placeholder="Clínica Santa Fe" oninput="updateHeader()"></div>
+          <div class="form-group" style="margin-bottom:0"><label>Teléfono / WhatsApp principal</label><input id="f-tel" type="text" placeholder="+504 9999-9999"></div>
+        </div>
+        <div class="form-group"><label>Dirección</label><input id="f-dir" type="text" placeholder="Colonia, ciudad"></div>
+        <div class="form-group"><label>Horarios de atención</label><input id="f-horario" type="text" placeholder="Lun-Vie 8am-5pm, Sáb 8am-12pm"></div>
+        <div class="form-group"><label>Seguros aceptados</label><input id="f-seguros" type="text" placeholder="Bancaseguros, Mapfre, IHSS..."></div>
+        <div class="form-group"><label>Número de WhatsApp de la clínica (para enlace directo)</label><input id="f-wa" type="text" placeholder="+50499999999 (sin espacios ni guiones)"></div>
+        <div class="form-grid">
+          <div class="form-group" style="margin-bottom:0"><label>Correo electrónico de la clínica</label><input id="f-email" type="email" placeholder="clinica@correo.com"></div>
+          <div class="form-group" style="margin-bottom:0"><label>Nombre del asistente virtual</label><input id="f-botname" type="text" value="Kiara" placeholder="Kiara"></div>
+        </div>
+        <div class="form-group"><label>Idioma de respuestas</label>
+          <select id="f-idioma">
+            <option value="auto">Automático (detecta el idioma del paciente)</option>
+            <option value="es">Solo español</option>
+            <option value="en">Solo inglés</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Información adicional</label><textarea id="f-extra" rows="2" placeholder="Estacionamiento, requisitos para citas, etc."></textarea></div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="saveInfo()"><i class="ti ti-device-floppy"></i> Guardar información</button>
+          <label class="btn btn-ghost" style="cursor:pointer;"><i class="ti ti-upload"></i> Subir documento<input type="file" accept=".txt,.doc,.docx" style="display:none;" onchange="handleFile(this)"></label>
+          <span class="file-status" id="fst"></span>
+        </div>
+        <div class="save-ok" id="sav-ok"><i class="ti ti-check"></i> Información guardada correctamente.</div>
+      </div>
+    </div>
+
+    <!-- SERVICIOS POR SECCIONES -->
+    <div id="tab-servicios" class="tab">
+      <div class="card">
+        <div class="card-title">Servicios por área</div>
+        <div class="card-sub">Agrega la información de cada área por separado. El bot la usará según lo que pregunte el paciente.</div>
+        <div id="svc-list"></div>
+        <button class="btn btn-ghost" style="margin-top:12px;" onclick="addSvc()"><i class="ti ti-plus"></i> Agregar área de servicio</button>
+      </div>
+      <div class="alert alert-blue"><i class="ti ti-bulb" style="font-size:16px;flex-shrink:0;"></i><span>Puedes agregar tantas áreas como quieras: Odontología, Laboratorio, Pediatría, Ginecología, Farmacia, etc. Cada una con su propia información y precios.</span></div>
+    </div>
+
+    <!-- REDIR -->
+    <div id="tab-redir" class="tab">
+      <div class="card">
+        <div class="card-title">Redirección por servicio</div>
+        <div class="card-sub">El bot detecta el servicio y redirige al número correcto con enlace de WhatsApp directo.</div>
+        <div id="redir-list"></div>
+        <button class="btn btn-ghost" style="margin-top:10px;" onclick="addRedir()"><i class="ti ti-plus"></i> Agregar servicio</button>
+      </div>
+      <div class="alert alert-blue"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0;margin-top:1px;"></i><span>Cuando el paciente pida hablar con alguien o mencione un servicio específico, el bot responde con el número directo y un botón para abrir WhatsApp.</span></div>
+    </div>
+
+    <!-- CHAT -->
+    <div id="tab-chat" class="tab">
+      <div class="chat-wrap">
+        <div class="chat-header">
+          <div class="chat-avatar"><i class="ti ti-stethoscope"></i></div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;" id="chat-title">Asistente de tu clínica</div>
+            <div style="font-size:11px;color:var(--text-2);">Bilingüe · Fotos · Citas · Redirección WhatsApp</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="clearChat()"><i class="ti ti-refresh"></i> Limpiar</button>
+        </div>
+        <div class="chat-messages" id="messages"></div>
+        <div id="img-preview-row" style="padding:0 12px 6px;display:none;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <img id="img-preview" class="img-preview" src="" alt="preview">
+            <button class="btn btn-ghost btn-sm" onclick="clearImg()" style="color:var(--danger);"><i class="ti ti-x"></i></button>
+            <span style="font-size:11px;color:var(--text-2);" id="img-name"></span>
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <label style="cursor:pointer;color:var(--text-2);padding:4px;" title="Adjuntar foto o receta">
+            <i class="ti ti-photo" style="font-size:18px;"></i>
+            <input type="file" id="img-input" accept="image/*" style="display:none;" onchange="handleImg(this)">
+          </label>
+          <textarea id="usr-inp" class="chat-input" rows="1" placeholder="Escribe o adjunta una foto de receta..."></textarea>
+          <button class="btn btn-primary" id="send-btn" onclick="sendMsg()"><i class="ti ti-send"></i></button>
+        </div>
+      </div>
+      <div class="quick-btns">
+        <button class="btn btn-ghost btn-sm" onclick="quickQ('¿Cuál es el horario?')">Horario</button>
+        <button class="btn btn-ghost btn-sm" onclick="quickQ('¿Qué servicios de odontología tienen?')">Odontología</button>
+        <button class="btn btn-ghost btn-sm" onclick="quickQ('Necesito resultados de laboratorio')">Laboratorio</button>
+        <button class="btn btn-ghost btn-sm" onclick="quickQ('Quiero agendar una cita')">Agendar cita</button>
+        <button class="btn btn-ghost btn-sm" onclick="quickQ('Quiero hablar con alguien')">Hablar con alguien</button>
+        <button class="btn btn-ghost btn-sm" onclick="quickQ('Tengo una urgencia')">Urgencias</button>
+        <button class="btn btn-ghost btn-sm" onclick="quickQ('What are your hours?')">English</button>
+      </div>
+    </div>
+
+    <!-- CITAS -->
+    <div id="tab-citas" class="tab">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div class="card-title" style="margin-bottom:0;">Citas registradas</div>
+          <span class="badge badge-blue" id="citas-count">0 citas</span>
+        </div>
+        <div id="citas-list"><p style="font-size:13px;color:var(--text-2);text-align:center;padding:1.5rem 0;">Las citas agendadas en el chat aparecen aquí automáticamente.</p></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Agregar cita manualmente</div>
+        <div class="form-grid">
+          <div class="form-group" style="margin-bottom:0;"><label>Nombre</label><input id="c-nom" type="text" placeholder="Juan Pérez"></div>
+          <div class="form-group" style="margin-bottom:0;"><label>Teléfono</label><input id="c-tel" type="text" placeholder="+504 9999-9999"></div>
+        </div>
+        <div class="form-grid" style="margin-top:12px;">
+          <div class="form-group" style="margin-bottom:0;"><label>Fecha</label><input id="c-fecha" type="date"></div>
+          <div class="form-group" style="margin-bottom:0;"><label>Hora</label><input id="c-hora" type="time"></div>
+        </div>
+        <div class="form-group" style="margin-top:12px;"><label>Área / Servicio</label>
+          <select id="c-serv"><option value="">Seleccionar...</option><option>Consulta general</option><option>Odontología</option><option>Laboratorio</option><option>Urgencias</option><option>Administración</option><option>Otro</option></select>
+        </div>
+        <button class="btn btn-primary" onclick="addCitaM()"><i class="ti ti-plus"></i> Agregar cita</button>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div id="tab-faq" class="tab">
+      <div class="card">
+        <div class="card-title">Preguntas frecuentes</div>
+        <div class="card-sub">El bot usará estas respuestas exactas cuando el paciente haga estas preguntas.</div>
+        <div id="faq-list"></div>
+        <button class="btn btn-ghost" style="margin-top:4px;" onclick="addFaq()"><i class="ti ti-plus"></i> Agregar pregunta</button>
+      </div>
+    </div>
+
+    <!-- MENSAJES -->
+    <div id="tab-mensajes" class="tab">
+      <div class="alert alert-green"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0;"></i><span>Guarda el nombre de tu clínica en la sección <strong>Clínica</strong> para personalizar estos mensajes.</span></div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><span class="badge badge-green"><i class="ti ti-message-2"></i> Bienvenida — Primer contacto</span></div>
+        <div id="msg1-view" class="msg-template"></div>
+        <textarea id="msg1-edit" class="msg-edit-area" rows="8"></textarea>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="copyMsg(1)"><i class="ti ti-copy"></i> Copiar</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleEdit(1)"><i class="ti ti-pencil"></i> Editar</button>
+          <button class="btn btn-green btn-sm" onclick="shareWA(1)"><i class="ti ti-brand-whatsapp"></i> Probar en WhatsApp</button>
+        </div>
+        <p style="font-size:11px;color:var(--text-2);margin-top:8px;">💡 En WhatsApp Business: <strong>Ajustes → Herramientas → Mensaje de bienvenida</strong></p>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><span class="badge badge-blue"><i class="ti ti-calendar-check"></i> Confirmación de cita</span></div>
+        <div id="msg2-view" class="msg-template"></div>
+        <textarea id="msg2-edit" class="msg-edit-area" rows="10"></textarea>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="copyMsg(2)"><i class="ti ti-copy"></i> Copiar</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleEdit(2)"><i class="ti ti-pencil"></i> Editar</button>
+          <button class="btn btn-green btn-sm" onclick="shareWA(2)"><i class="ti ti-brand-whatsapp"></i> Probar en WhatsApp</button>
+        </div>
+        <p style="font-size:11px;color:var(--text-2);margin-top:8px;">💡 Guárdalo como respuesta rápida con el atajo <em>/cita</em></p>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><span class="badge badge-warn"><i class="ti ti-clock"></i> Seguimiento — Sin respuesta</span></div>
+        <div id="msg3-view" class="msg-template"></div>
+        <textarea id="msg3-edit" class="msg-edit-area" rows="8"></textarea>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="copyMsg(3)"><i class="ti ti-copy"></i> Copiar</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleEdit(3)"><i class="ti ti-pencil"></i> Editar</button>
+          <button class="btn btn-green btn-sm" onclick="shareWA(3)"><i class="ti ti-brand-whatsapp"></i> Probar en WhatsApp</button>
+        </div>
+        <p style="font-size:11px;color:var(--text-2);margin-top:8px;">💡 Envíalo 24-48 horas después si el paciente no respondió.</p>
+      </div>
+    </div>
+
+    <!-- WHATSAPP -->
+    <div id="tab-wa" class="tab">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-brand-whatsapp" style="color:#16a34a;"></i> Enlace directo a WhatsApp de tu clínica</div>
+        <div class="card-sub">Genera un enlace o botón que los pacientes pueden usar para escribirte directamente.</div>
+        <div class="form-group"><label>Número de WhatsApp (con código de país, sin espacios)</label><input id="wa-num-input" type="text" placeholder="+50499999999"></div>
+        <div class="form-group"><label>Mensaje predefinido (opcional)</label><textarea id="wa-msg-input" rows="2" placeholder="Hola, me comunico desde la página web para..."></textarea></div>
+        <button class="btn btn-primary" onclick="genWA()"><i class="ti ti-link"></i> Generar enlace</button>
+        <div id="wa-result" style="display:none;margin-top:16px;">
+          <div class="alert alert-green"><i class="ti ti-check" style="font-size:16px;flex-shrink:0;"></i><span>Tu enlace de WhatsApp está listo:</span></div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:10px;">
+            <p id="wa-link-text" style="font-size:12px;color:var(--info);word-break:break-all;"></p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" onclick="copyWALink()"><i class="ti ti-copy"></i> Copiar enlace</button>
+            <button class="btn btn-green btn-sm" onclick="openWALink()"><i class="ti ti-brand-whatsapp"></i> Probar enlace</button>
+          </div>
+          <div style="margin-top:16px;">
+            <p style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px;">Código de botón para tu sitio web:</p>
+            <div class="code-block" id="wa-code-block"></div>
+            <button class="btn btn-ghost btn-sm" style="margin-top:6px;" onclick="copyWACode()"><i class="ti ti-copy"></i> Copiar código</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Cómo conectar WhatsApp con el chatbot automáticamente</div>
+        <div class="card-sub">Para que el bot responda solo en WhatsApp sin que tú lo hagas manualmente.</div>
+        <div class="step"><div class="step-num">1</div><div class="step-text">Regístrate gratis en <strong><a href="https://make.com" target="_blank" style="color:var(--primary);">make.com</a></strong></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-text">Conecta tu <strong>WhatsApp Business API</strong> (requiere cuenta Meta Business verificada)</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-text">Crea un escenario: WhatsApp recibe mensaje → envía a Groq API → devuelve respuesta a WhatsApp</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-text">Usa el mismo prompt del chatbot que ya tienes configurado aquí</div></div>
+        <div class="alert alert-warn" style="margin-top:8px;"><i class="ti ti-alert-triangle" style="font-size:16px;flex-shrink:0;"></i><span>WhatsApp Business API requiere verificación de Meta y tiene costos por mensaje. Alternativa gratuita: <strong>Twilio</strong> con número de prueba.</span></div>
+      </div>
+    </div>
+
+    <!-- CORREO -->
+    <div id="tab-correo" class="tab">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-mail" style="color:var(--info);"></i> Correo electrónico de contacto</div>
+        <div class="card-sub">Kiara informará a los pacientes sobre este correo cuando quieran enviar comentarios, quejas o consultas.</div>
+        <div class="form-group"><label>Correo de la clínica</label><input id="email-display" type="email" placeholder="clinica@correo.com" oninput="syncEmail(this.value)"></div>
+        <div class="alert alert-blue" style="margin-top:4px;"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0;"></i><span>Cuando un paciente pregunte cómo enviar una queja o comentario, Kiara le dará este correo y mostrará un botón para abrir su cliente de correo directamente.</span></div>
+        <div class="card-title" style="margin-top:16px;margin-bottom:8px;">Previsualización del botón que verá el paciente</div>
+        <button class="wa-btn" style="background:#dbeafe;color:#1d4ed8;border:none;cursor:default;"><i class="ti ti-mail"></i> Enviar correo a <span id="email-preview">clinica@correo.com</span></button>
+      </div>
+      <div class="card">
+        <div class="card-title">Confirmación de cita por correo</div>
+        <div class="card-sub">Cuando se registre una cita en el chatbot, Kiara ofrecerá al paciente enviar la confirmación a su correo.</div>
+        <div class="alert alert-green"><i class="ti ti-check" style="font-size:16px;flex-shrink:0;"></i><span>Esta función está activada automáticamente. Cuando el bot confirme una cita, mostrará un botón para que el paciente abra su correo con los detalles pre-llenados.</span></div>
+        <div class="card-title" style="margin-bottom:8px;font-size:13px;">Ejemplo de correo de confirmación</div>
+        <div class="msg-template">Para: [correo del paciente]
+Asunto: Confirmación de cita — [Nombre de la clínica]
+
+Estimado/a [NOMBRE],
+
+Su cita ha sido confirmada:
+• Fecha: [FECHA]
+• Hora: [HORA]  
+• Servicio: [SERVICIO]
+
+Presente este correo al llegar.
+
+[Nombre de la clínica]</div>
+      </div>
+    </div>
+
+    <!-- GUIA -->
+    <div id="tab-guia" class="tab">
+      <div class="card">
+        <div class="card-title">🚀 Actualizar tu chatbot en GitHub</div>
+        <div class="card-sub">Cada vez que hagas cambios aquí, descarga el archivo y súbelo a GitHub para actualizar tu sitio.</div>
+        <div class="step"><div class="step-num">1</div><div class="step-text">Descarga el archivo <strong>index.html</strong> actualizado desde esta página.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-text">Ve a <strong><a href="https://github.com/dessire03-dot/chatbot" target="_blank" style="color:var(--primary);">github.com/dessire03-dot/chatbot</a></strong></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-text">Clic en <strong>index.html</strong> → ✏️ lápiz → selecciona todo (<strong>Ctrl+A</strong>) → borra → pega el nuevo contenido → <strong>Commit changes</strong>.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-text">En 1-2 minutos tu sitio <strong>dessire03-dot.github.io/chatbot</strong> se actualiza automáticamente.</div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+<script>
+const API_KEY = "TU_API_KEY_AQUI"; // Reemplaza con tu key de console.groq.com
+const GROQ_MODEL = "llama-3.3-70b-versatile";
+
+let info = {}, history = [], citas = [], imgData = null, imgMime = null;
+let faqs = [
+  {q:'¿Tienen estacionamiento?', a:'Sí, contamos con estacionamiento gratuito.'},
+  {q:'¿Aceptan emergencias?', a:'Atendemos urgencias en horario de oficina. Para emergencias fuera de horario use el número de urgencias.'},
+  {q:'¿Qué incluye la limpieza dental?', a:'Profilaxis, eliminación de sarro y pulido. Se recomienda cada 6 meses.'}
+];
+let redirs = [
+  {servicio:'Laboratorio', numero:'', keywords:'laboratorio,examen,resultado,análisis,muestra,sangre,orina,prueba'},
+  {servicio:'Urgencias', numero:'', keywords:'urgencia,emergencia,urgente,grave,accidente,dolor fuerte'},
+  {servicio:'Administración / Citas', numero:'', keywords:'cita,agendar,precio,pago,factura,administración,disponibilidad'},
+  {servicio:'Odontología', numero:'', keywords:'odontología,dental,diente,muela,limpieza dental,extracción,ortodoncia,brackets,caries,dentista'}
+];
+let svcs = [
+  {nombre:'Medicina General', icon:'ti-stethoscope', info:'', precios:'', medicos:'', open:false},
+  {nombre:'Odontología', icon:'ti-tooth', info:'', precios:'', medicos:'', open:false},
+  {nombre:'Laboratorio', icon:'ti-flask', info:'', precios:'', medicos:'', open:false},
+  {nombre:'Urgencias', icon:'ti-ambulance', info:'', precios:'', medicos:'', open:false}
+];
+
+const TABS = ['info','servicios','redir','chat','citas','faq','mensajes','wa','correo','guia'];
+function ST(t){
+  TABS.forEach(id=>{
+    const tabEl = document.getElementById('tab-'+id);
+    if(tabEl) tabEl.classList.remove('active');
+    const btnEl = document.querySelector('[data-tab="'+id+'"]');
+    if(btnEl) btnEl.classList.remove('active');
+  });
+  const activeTab = document.getElementById('tab-'+t);
+  if(activeTab) activeTab.classList.add('active');
+  const activeBtn = document.querySelector('[data-tab="'+t+'"]');
+  if(activeBtn) activeBtn.classList.add('active');
+  if(t==='faq') renderFaqs();
+  if(t==='redir') renderRedirs();
+  if(t==='servicios') renderSvcs();
+  if(t==='mensajes') updateMsgs();
+}
+
+function updateHeader(){
+  const n = document.getElementById('f-nombre').value || 'Asistente Virtual';
+  document.getElementById('header-name').textContent = n;
+  document.getElementById('chat-title').textContent = 'Asistente de ' + n;
+}
+
+function saveInfo(){
+  info = {
+    nombre: document.getElementById('f-nombre').value || 'la clínica',
+    tel: document.getElementById('f-tel').value,
+    dir: document.getElementById('f-dir').value,
+    horario: document.getElementById('f-horario').value,
+    seguros: document.getElementById('f-seguros').value,
+    wa: document.getElementById('f-wa').value,
+    email: document.getElementById('f-email').value,
+    botname: document.getElementById('f-botname').value || 'Kiara',
+    extra: document.getElementById('f-extra').value,
+    idioma: document.getElementById('f-idioma').value
+  };
+  history = [];
+  clearChat();
+  updateMsgs();
+  const ok = document.getElementById('sav-ok');
+  ok.style.display = 'flex'; ok.style.alignItems = 'center'; ok.style.gap = '5px';
+  setTimeout(()=> ok.style.display = 'none', 3000);
+}
+
+function handleFile(input){
+  const file = input.files[0]; if(!file) return;
+  const st = document.getElementById('fst');
+  st.textContent = 'Leyendo ' + file.name + '...';
+  const r = new FileReader();
+  r.onload = e => {
+    const t = document.getElementById('f-extra');
+    t.value += (t.value?'\n':'') + e.target.result.slice(0,3000);
+    st.textContent = '✓ ' + file.name + ' cargado';
+  };
+  r.readAsText(file);
+}
+
+// SERVICES
+function renderSvcs(){
+  const el = document.getElementById('svc-list');
+  el.innerHTML = svcs.map((s,i) => `
+    <div class="svc-section">
+      <div class="svc-header" onclick="toggleSvc(${i})">
+        <div class="svc-title"><i class="ti ${s.icon}" style="font-size:16px;color:var(--primary);"></i>${s.nombre}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button onclick="event.stopPropagation();svcs.splice(${i},1);renderSvcs();" style="border:none;background:none;cursor:pointer;color:var(--danger);font-size:13px;" title="Eliminar"><i class="ti ti-trash"></i></button>
+          <i class="ti ${s.open?'ti-chevron-up':'ti-chevron-down'}" style="font-size:14px;color:var(--text-2);"></i>
+        </div>
+      </div>
+      <div class="svc-body ${s.open?'open':''}">
+        <div class="form-group"><label>Nombre del área</label><input value="${s.nombre}" onchange="svcs[${i}].nombre=this.value;renderSvcs();" style="width:100%;"></div>
+        <div class="form-group"><label>Descripción / Servicios que incluye</label><textarea rows="3" onchange="svcs[${i}].info=this.value" style="width:100%;" placeholder="Ej: Consultas, exámenes, procedimientos...">${s.info}</textarea></div>
+        <div class="form-group"><label>Precios</label><textarea rows="2" onchange="svcs[${i}].precios=this.value" style="width:100%;" placeholder="Ej: Consulta L.300, Limpieza L.400...">${s.precios}</textarea></div>
+        <div class="form-group"><label>Médicos / Personal</label><input value="${s.medicos}" onchange="svcs[${i}].medicos=this.value" style="width:100%;" placeholder="Ej: Dr. Martínez, Dra. López..."></div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleSvc(i){
+  svcs[i].open = !svcs[i].open;
+  renderSvcs();
+}
+
+function addSvc(){
+  svcs.push({nombre:'Nuevo servicio', icon:'ti-medical-cross', info:'', precios:'', medicos:'', open:true});
+  renderSvcs();
+}
+
+// REDIR
+function renderRedirs(){
+  const el = document.getElementById('redir-list');
+  el.innerHTML = redirs.map((r,i) => `
+    <div class="redir-item">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><label style="font-size:12px;color:var(--text-2);font-weight:500;display:block;margin-bottom:3px;">Servicio</label>
+        <input value="${r.servicio}" onchange="redirs[${i}].servicio=this.value" style="width:100%;"></div>
+        <div><label style="font-size:12px;color:var(--text-2);font-weight:500;display:block;margin-bottom:3px;">Número WhatsApp</label>
+        <input value="${r.numero}" onchange="redirs[${i}].numero=this.value" placeholder="+50499999999" style="width:100%;"></div>
+        <div style="grid-column:1/-1;"><label style="font-size:12px;color:var(--text-2);font-weight:500;display:block;margin-bottom:3px;">Palabras clave (separadas por coma)</label>
+        <input value="${r.keywords}" onchange="redirs[${i}].keywords=this.value" style="width:100%;font-size:12px;"></div>
+      </div>
+      <button onclick="redirs.splice(${i},1);renderRedirs();" class="btn btn-ghost btn-sm" style="color:var(--danger);border-color:transparent;margin-top:8px;"><i class="ti ti-trash"></i> Eliminar</button>
+    </div>`).join('');
+}
+function addRedir(){ redirs.push({servicio:'',numero:'',keywords:''}); renderRedirs(); }
+
+function buildWaLink(numero, servicio){
+  const num = numero.replace(/\D/g,'');
+  const msg = encodeURIComponent('Hola, me comunicaron desde '+(info.nombre||'la clínica')+' para el servicio de '+servicio+'.');
+  return 'https://wa.me/'+num+'?text='+msg;
+}
+
+// SYSTEM PROMPT
+function buildSystem(){
+  const c = info;
+  const svcTxt = svcs.filter(s=>s.info||s.precios||s.medicos).length
+    ? '\n\nSERVICIOS POR ÁREA:\n' + svcs.filter(s=>s.nombre).map(s =>
+        `=== ${s.nombre} ===\n${s.info?'Descripción: '+s.info+'\n':''}${s.precios?'Precios: '+s.precios+'\n':''}${s.medicos?'Personal: '+s.medicos+'\n':''}`
+      ).join('\n') : '';
+  const faqTxt = faqs.length ? '\n\nPREGUNTAS FRECUENTES:\n'+faqs.map(f=>'P: '+f.q+'\nR: '+f.a).join('\n') : '';
+  const activos = redirs.filter(r=>r.numero);
+  const redirTxt = activos.length
+    ? '\n\nREDIRECCIÓN: Cuando el paciente mencione estos servicios O pida hablar con alguien, responde y agrega AL FINAL exactamente:\n[REDIR:{"servicio":"NOMBRE","numero":"NUMERO","link":"LINK"}]\n' +
+      activos.map(r=>'- '+r.servicio+' | keywords: '+r.keywords+' | num: '+r.numero+' | link: '+buildWaLink(r.numero,r.servicio)).join('\n')
+    : '';
+  const waTxt = c.wa ? '\n\nSi el paciente quiere hablar con alguien o necesita atención humana, dile que puede escribir directamente al WhatsApp: '+c.wa+' y genera: [REDIR:{"servicio":"Atención humana","numero":"'+c.wa+'","link":"https://wa.me/'+c.wa.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola, necesito hablar con alguien de '+(c.nombre||'la clínica'))+'"}]' : '';
+  const emailTxt = c.email ? '
+
+CORREO: Si el paciente quiere enviar un comentario, queja o consulta por correo, dile que puede escribir a '+c.email+' y genera al final: [EMAIL:'+c.email+']' : '';
+  const citasTxt = '
+
+FLUJO DE CITAS: Si quiere agendar, recopila: 1)Nombre 2)Teléfono 3)Servicio 4)Fecha y hora. Al tener todos escribe: [CITA:{"nombre":"...","tel":"...","servicio":"...","fecha":"...","hora":"..."}]';
+  const idiomaInstr = c.idioma==='auto'?'\n\nIDIOMA: Detecta el idioma y responde en ese idioma.':c.idioma==='en'?'\n\nResponde en inglés.':'\n\nResponde en español.';
+  return `Tu nombre es ${c.botname||'Kiara'} y eres la asistente virtual de ${c.nombre||'la clínica'}. Eres una profesional de la salud altamente capacitada: habla con terminología médica apropiada pero siempre explicándola en términos sencillos para el paciente. Preséntate como Kiara, asistente de salud, cuando saludes por primera vez. Usa un lenguaje formal, empático y profesional como lo haría una enfermera o coordinadora médica experimentada. Transmite confianza, seguridad y calidez humana en cada mensaje.\n\nINFORMACIÓN GENERAL:\n${c.tel?'- Tel/WhatsApp: '+c.tel+'\n':''}${c.dir?'- Dirección: '+c.dir+'\n':''}${c.horario?'- Horarios: '+c.horario+'\n':''}${c.seguros?'- Seguros: '+c.seguros+'\n':''}${c.extra?'- Info adicional: '+c.extra+'\n':''}${svcTxt}${faqTxt}${redirTxt}${waTxt}${emailTxt}${citasTxt}${idiomaInstr}\n\nREGLAS OBLIGATORIAS — NUNCA las rompas bajo ninguna circunstancia:\n1. JAMÁS des indicaciones médicas de ningún tipo: no recetes medicamentos, dosis, tratamientos, remedios caseros ni suplementos. Ni siquiera si el paciente insiste o dice que es urgente.\n2. JAMÁS diagnostiques síntomas, enfermedades ni condiciones. Si el paciente describe lo que siente, exprésale empatía, dile que comprende su preocupación y SIEMPRE redirige a la clínica para recibir atención médica personalizada.\n3. Ante CUALQUIER consulta médica o de salud, tu respuesta siempre debe terminar ofreciendo agendar una cita o visitar la clínica. Ejemplo: "Le recomiendo acudir a nuestra clínica donde nuestros especialistas podrán brindarle la atención que necesita. ¿Le agendo una cita?"\n4. En CADA mensaje menciona al menos un servicio relevante de la clínica que pueda ayudar al paciente.\n5. Sé SIEMPRE cordial, respetuoso, empático y profesional. Nunca uses tono frío, brusco ni impaciente.\n6. Si no sabes algo, invita al paciente a llamar o visitar la clínica. Nunca inventes información médica.\n7. Máximo 4 oraciones por respuesta. Sé claro, directo y cálido.`;
+}
+
+// IMAGE HANDLING
+function handleImg(input){
+  const file = input.files[0]; if(!file) return;
+  imgMime = file.type;
+  const reader = new FileReader();
+  reader.onload = e => {
+    imgData = e.target.result.split(',')[1];
+    document.getElementById('img-preview').src = e.target.result;
+    document.getElementById('img-name').textContent = file.name;
+    document.getElementById('img-preview-row').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+function clearImg(){
+  imgData = null; imgMime = null;
+  document.getElementById('img-input').value = '';
+  document.getElementById('img-preview-row').style.display = 'none';
+}
+
+// CHAT
+function addMsg(role, text, imgSrc){
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = role==='user'?'msg-user':'msg-bot';
+  const citaM = text.match(/\[CITA:(\{.*?\})\]/s);
+  const redirM = text.match(/\[REDIR:(\{.*?\})\]/s);
+  const humanM = text.match(/\[HUMAN\]/);
+  const emailM = text.match(/\[EMAIL:([^\]]+)\]/);
+  const clean = text.replace(/\[CITA:\{.*?\}\]/s,'').replace(/\[REDIR:\{.*?\}]/s,'').replace(/\[HUMAN\]/,'').trim();
+  div.textContent = clean;
+  if(imgSrc && role==='user'){
+    const img = document.createElement('img');
+    img.src = imgSrc; img.className = 'msg-img';
+    div.appendChild(img);
+  }
+  if(role==='bot'){
+    const cp = document.createElement('button');
+    cp.className = 'msg-copy';
+    cp.innerHTML = '<i class="ti ti-copy"></i> Copiar';
+    cp.onclick = ()=>{ navigator.clipboard.writeText(clean); cp.textContent='✓ Copiado'; setTimeout(()=>{ cp.innerHTML='<i class="ti ti-copy"></i> Copiar'; },1500); };
+    div.appendChild(document.createElement('br'));
+    div.appendChild(cp);
+    if(redirM){
+      try{
+        const d = JSON.parse(redirM[1]);
+        const waBtn = document.createElement('button');
+        waBtn.className = 'wa-btn';
+        waBtn.innerHTML = '<i class="ti ti-brand-whatsapp"></i> Abrir WhatsApp — '+d.servicio;
+        waBtn.onclick = ()=> window.open(d.link,'_blank');
+        const numP = document.createElement('p');
+        numP.className = 'wa-num';
+        numP.textContent = 'Número: '+d.numero;
+        div.appendChild(document.createElement('br'));
+        div.appendChild(waBtn);
+        div.appendChild(numP);
+      }catch(e){}
+    }
+    if(emailM && emailM[1]){ const emailBtn=document.createElement("button"); emailBtn.className="wa-btn"; emailBtn.style.background="#dbeafe"; emailBtn.style.color="#1d4ed8"; emailBtn.innerHTML="<i class="ti ti-mail"></i> Enviar correo a "+emailM[1]; emailBtn.onclick=()=>window.open("mailto:"+emailM[1]+"?subject=Consulta desde el chatbot","_blank"); div.appendChild(document.createElement("br")); div.appendChild(emailBtn); }
+    if(humanM){
+      const hb = document.createElement('span');
+      hb.className = 'human-badge';
+      hb.innerHTML = '<i class="ti ti-user"></i> Requiere atención humana';
+      div.appendChild(document.createElement('br'));
+      div.appendChild(hb);
+    }
+    if(citaM){ try{ addCita(JSON.parse(citaM[1])); }catch(e){} }
+  }
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function clearChat(){
+  history = [];
+  document.getElementById('messages').innerHTML = '';
+  addMsg('bot','¡Hola! '+(info.nombre?'Soy el asistente de '+info.nombre+'. ':'')+'¿En qué puedo ayudarte hoy?');
+}
+
+function quickQ(q){ document.getElementById('usr-inp').value = q; sendMsg(); }
+
+async function sendMsg(){
+  const inp = document.getElementById('usr-inp');
+  const text = inp.value.trim();
+  if(!text && !imgData) return;
+  const currentImg = imgData ? document.getElementById('img-preview').src : null;
+  inp.value = ''; inp.style.height = 'auto';
+  addMsg('user', text || '(imagen adjunta)', currentImg);
+
+  // Build message content for Groq (vision via llava if image)
+  let userContent;
+  if(imgData){
+    userContent = [
+      {type:'text', text: (text||'Por favor analiza esta imagen. Si es una receta médica, explica qué contiene.')},
+      {type:'image_url', image_url:{url:`data:${imgMime};base64,${imgData}`}}
+    ];
+  } else {
+    userContent = text;
+  }
+  history.push({role:'user', content: userContent});
+  clearImg();
+
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true;
+  const msgs = document.getElementById('messages');
+  const typing = document.createElement('div');
+  typing.className = 'msg-bot'; typing.textContent = '...';
+  msgs.appendChild(typing); msgs.scrollTop = msgs.scrollHeight;
+
+  try{
+    const model = imgData ? 'llama-3.2-11b-vision-preview' : GROQ_MODEL;
+    const groqMessages = [{role:'system', content: buildSystem()}, ...history];
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
+      body: JSON.stringify({model: imgData?'llama-3.2-11b-vision-preview':GROQ_MODEL, max_tokens:1000, messages: groqMessages})
+    });
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content || 'No pude obtener respuesta.';
+    typing.remove();
+    addMsg('bot', reply);
+    history.push({role:'assistant', content: reply});
+  }catch(e){
+    typing.remove();
+    addMsg('bot','Lo siento, en este momento no puedo procesar tu mensaje. Por favor comunícate directamente con nosotros por WhatsApp o teléfono.');
+    // Notificar por correo al administrador
+    notificarFallo(text || '(imagen adjunta)', e.message || 'Error desconocido');
+  }
+  btn.disabled = false;
+}
+
+function notificarFallo(mensajePaciente, errorDetalle){
+  const emailAdmin = (info && info.email) || document.getElementById('f-email').value;
+  if(!emailAdmin) return;
+  const clinica = (info && info.nombre) || 'la clínica';
+  const ahora = new Date().toLocaleString('es-HN', {dateStyle:'short', timeStyle:'short'});
+  const subject = encodeURIComponent('⚠️ Kiara no pudo responder — '+clinica);
+  const body = encodeURIComponent(
+    'ALERTA DEL CHATBOT — '+clinica+'\n\n'+
+    'Fecha y hora: '+ahora+'\n\n'+
+    'Mensaje del paciente que no se pudo atender:\n'+mensajePaciente+'\n\n'+
+    'Error técnico: '+errorDetalle+'\n\n'+
+    'Por favor comunícate con este paciente lo antes posible.\n\n'+
+    '— Sistema automático de Kiara'
+  );
+  // Abrir cliente de correo con el aviso pre-llenado
+  const div = document.getElementById('messages');
+  const alertDiv = document.createElement('div');
+  alertDiv.className = 'msg-bot';
+  alertDiv.style.borderLeft = '3px solid #d97706';
+  alertDiv.style.background = '#fffbeb';
+  alertDiv.textContent = '⚠️ Se envió un aviso al correo de la clínica sobre este fallo.';
+  const btnCorreo = document.createElement('button');
+  btnCorreo.className = 'wa-btn';
+  btnCorreo.style.cssText = 'background:#fef3c7;color:#92400e;margin-top:6px;';
+  btnCorreo.innerHTML = "<i class='ti ti-mail'></i> Ver aviso de fallo";
+  btnCorreo.onclick = function(){ window.open('mailto:'+emailAdmin+'?subject='+subject+'&body='+body,'_blank'); };
+  alertDiv.appendChild(document.createElement('br'));
+  alertDiv.appendChild(btnCorreo);
+  div.appendChild(alertDiv);
+  div.scrollTop = div.scrollHeight;
+  // Auto-abrir el correo silenciosamente
+  try{ window.open('mailto:'+emailAdmin+'?subject='+subject+'&body='+body,'_blank'); }catch(err){}
+}
+
+// CITAS
+function addCita(d){
+  citas.push({...d, id:Date.now(), estado:'Pendiente'});
+  renderCitas();
+  document.getElementById('citas-count').textContent = citas.length+' cita'+(citas.length!==1?'s':'');
+}
+function addCitaM(){
+  const d = {nombre:document.getElementById('c-nom').value, tel:document.getElementById('c-tel').value, fecha:document.getElementById('c-fecha').value, hora:document.getElementById('c-hora').value, servicio:document.getElementById('c-serv').value, id:Date.now(), estado:'Pendiente'};
+  if(!d.nombre){alert('Ingresa el nombre del paciente');return;}
+  citas.push(d); renderCitas();
+  ['c-nom','c-tel','c-fecha','c-hora'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('c-serv').value='';
+  document.getElementById('citas-count').textContent = citas.length+' cita'+(citas.length!==1?'s':'');
+}
+function renderCitas(){
+  const el = document.getElementById('citas-list');
+  if(!citas.length){el.innerHTML='<p style="font-size:13px;color:var(--text-2);text-align:center;padding:1.5rem 0;">Las citas agendadas en el chat aparecen aquí automáticamente.</p>';return;}
+  el.innerHTML = citas.map(c=>`
+    <div class="cita-row">
+      <div><p style="margin:0;font-size:13px;font-weight:600;">${c.nombre||'-'}</p>
+      <p style="margin:0;font-size:12px;color:var(--text-2);">${[c.servicio,c.fecha,c.hora,c.tel].filter(Boolean).join(' · ')}</p></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="badge badge-green">${c.estado}</span>
+        <button onclick="delCita(${c.id})" class="btn btn-ghost btn-sm" style="color:var(--danger);border-color:transparent;"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>`).join('');
+}
+function delCita(id){ citas=citas.filter(c=>c.id!==id); renderCitas(); document.getElementById('citas-count').textContent=citas.length+' cita'+(citas.length!==1?'s':''); }
+
+// FAQ
+function renderFaqs(){
+  const el = document.getElementById('faq-list');
+  el.innerHTML = faqs.map((f,i)=>`
+    <div class="faq-item">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="flex:1;">
+          <input value="${f.q.replace(/"/g,'&quot;')}" onchange="faqs[${i}].q=this.value" placeholder="Pregunta del paciente" style="width:100%;margin-bottom:6px;font-size:13px;">
+          <textarea onchange="faqs[${i}].a=this.value" rows="2" placeholder="Respuesta del bot" style="width:100%;resize:none;font-size:13px;">${f.a}</textarea>
+        </div>
+        <button onclick="faqs.splice(${i},1);renderFaqs();" class="btn btn-ghost btn-sm" style="color:var(--danger);border-color:transparent;flex-shrink:0;"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>`).join('');
+}
+function addFaq(){ faqs.push({q:'',a:''}); renderFaqs(); }
+
+// MENSAJES
+function getNombre(){ return (info.nombre&&info.nombre!=='la clínica')?info.nombre:(document.getElementById('f-nombre').value||'nuestra clínica'); }
+function getMsgs(){
+  const n = getNombre();
+  return [
+    `Estimado/a paciente,\n\nBienvenido/a a ${n}. Hemos recibido su mensaje y con gusto le atenderemos a la brevedad.\n\nPara brindarle una atención más rápida, por favor indíquenos:\n• ¿En qué servicio está interesado/a?\n• ¿Cuál es su nombre completo?\n\nNuestro horario: lunes a viernes 8am-5pm, sábados 8am-12pm.\n\nQuedamos a sus órdenes. 🏥`,
+    `Estimado/a *[NOMBRE DEL PACIENTE]*,\n\nLe confirmamos su cita en ${n}:\n\n📋 *Detalles:*\n• 📅 Fecha: [FECHA]\n• ⏰ Hora: [HORA]\n• 🏥 Servicio: [SERVICIO]\n• 👨‍⚕️ Atendido por: [MÉDICO]\n\n*Indicaciones:*\n— Presentarse 10 minutos antes.\n— Traer documento de identidad.\n— Cancelaciones con 24h de anticipación.\n\n${n} ✅`,
+    `Estimado/a paciente,\n\nLe escribimos de parte de ${n}. Notamos que su consulta quedó pendiente.\n\n¿Podemos ayudarle a agendar su cita o resolver alguna duda? Estamos disponibles lunes a viernes 8am-5pm.\n\nAtentamente,\n${n} 🏥`
+  ];
+}
+function updateMsgs(){
+  const msgs = getMsgs();
+  for(let i=1;i<=3;i++){
+    const view = document.getElementById('msg'+i+'-view');
+    const edit = document.getElementById('msg'+i+'-edit');
+    if(!edit.style.display||edit.style.display==='none') view.textContent = msgs[i-1];
+  }
+}
+function toggleEdit(n){
+  const view=document.getElementById('msg'+n+'-view');
+  const edit=document.getElementById('msg'+n+'-edit');
+  const btn=document.querySelectorAll('[onclick="toggleEdit('+n+')"]')[0];
+  if(!edit.style.display||edit.style.display==='none'){
+    edit.value=view.textContent; edit.style.display='block'; view.style.display='none';
+    btn.innerHTML='<i class="ti ti-check"></i> Guardar';
+  }else{
+    view.textContent=edit.value; edit.style.display='none'; view.style.display='block';
+    btn.innerHTML='<i class="ti ti-pencil"></i> Editar';
+  }
+}
+function getContent(n){ const e=document.getElementById('msg'+n+'-edit'),v=document.getElementById('msg'+n+'-view'); return(e.style.display&&e.style.display!=='none')?e.value:v.textContent; }
+function copyMsg(n){ navigator.clipboard.writeText(getContent(n)); const b=document.querySelectorAll('[onclick="copyMsg('+n+')"]')[0]; b.innerHTML='<i class="ti ti-check"></i> Copiado'; setTimeout(()=>b.innerHTML='<i class="ti ti-copy"></i> Copiar',1800); }
+function shareWA(n){ window.open('https://wa.me/?text='+encodeURIComponent(getContent(n)),'_blank'); }
+
+// WHATSAPP GENERATOR
+function genWA(){
+  const num = document.getElementById('wa-num-input').value.replace(/\D/g,'');
+  const msg = document.getElementById('wa-msg-input').value;
+  if(!num){alert('Ingresa el número de WhatsApp');return;}
+  const link = 'https://wa.me/'+num+(msg?'?text='+encodeURIComponent(msg):'');
+  document.getElementById('wa-link-text').textContent = link;
+  document.getElementById('wa-result').style.display = 'block';
+  document.getElementById('wa-code-block').textContent = `<a href="${link}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-family:sans-serif;font-weight:600;">\n  📱 Escríbenos por WhatsApp\n</a>`;
+}
+function copyWALink(){ navigator.clipboard.writeText(document.getElementById('wa-link-text').textContent); }
+function openWALink(){ window.open(document.getElementById('wa-link-text').textContent,'_blank'); }
+function copyWACode(){ navigator.clipboard.writeText(document.getElementById('wa-code-block').textContent); }
+
+// EMAIL
+function syncEmail(val){
+  const ep = document.getElementById("email-preview");
+  if(ep) ep.textContent = val || "clinica@correo.com";
+  const fe = document.getElementById("f-email");
+  if(fe && fe.value !== val) fe.value = val;
+}
+
+// INIT
+document.getElementById('usr-inp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
+document.getElementById('usr-inp').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';});
+renderRedirs(); renderFaqs(); renderSvcs(); updateMsgs(); clearChat();
+
+// Enviar confirmación de cita por AMBOS canales (correo Y WhatsApp)
+const _addCitaOrig = addCita;
+window.addCita = function(d){
+  _addCitaOrig(d);
+  const emailCita = (info && info.email) || document.getElementById("f-email").value;
+  const waCita = (info && info.wa) || document.getElementById("f-wa").value;
+  const clinica = info.nombre || "la clinica";
+  const msgs = document.getElementById("messages");
+  const div = document.createElement("div");
+  div.className = "msg-bot";
+
+  if(!emailCita && !waCita){
+    div.textContent = "Cita registrada. Agrega el correo y WhatsApp en la seccion Clinica para enviar confirmaciones automaticas.";
+    msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight; return;
+  }
+
+  div.textContent = "Confirmacion lista. Usa los botones para enviarla por correo y WhatsApp:";
+  div.appendChild(document.createElement("br"));
+
+  if(emailCita){
+    const subject = encodeURIComponent("Confirmacion de cita - "+clinica);
+    const body = encodeURIComponent("Estimado/a "+d.nombre+",\n\nSu cita ha sido confirmada:\n- Servicio: "+d.servicio+"\n- Fecha: "+d.fecha+"\n- Hora: "+d.hora+"\n\nPreséntese 10 minutos antes con documento de identidad.\n\nAtentamente,\n"+clinica);
+    const btnEmail = document.createElement("button");
+    btnEmail.className = "wa-btn";
+    btnEmail.style.cssText = "background:#dbeafe;color:#1d4ed8;margin-right:6px;margin-top:6px;";
+    btnEmail.innerHTML = "<i class='ti ti-mail'></i> Enviar por correo";
+    btnEmail.onclick = function(){ window.open("mailto:?subject="+subject+"&body="+body,"_blank"); };
+    div.appendChild(btnEmail);
+  }
+
+  if(waCita){
+    const msgWA = encodeURIComponent("Confirmacion de cita - "+clinica+"\n\nEstimado/a "+d.nombre+",\nSu cita fue registrada:\nFecha: "+d.fecha+"\nHora: "+d.hora+"\nServicio: "+d.servicio+"\n\nPor favor presente este mensaje al llegar. Gracias.");
+    const numWA = waCita.replace(/[^0-9]/g,"");
+    const btnWA = document.createElement("button");
+    btnWA.className = "wa-btn";
+    btnWA.style.marginTop = "6px";
+    btnWA.innerHTML = "<i class='ti ti-brand-whatsapp'></i> Enviar por WhatsApp";
+    btnWA.onclick = function(){ window.open("https://wa.me/"+numWA+"?text="+msgWA,"_blank"); };
+    div.appendChild(btnWA);
+  }
+
+  const nota = document.createElement("p");
+  nota.style.cssText = "font-size:11px;color:var(--text-3);margin-top:6px;";
+  nota.textContent = "Haz clic en ambos botones para enviar la confirmacion por correo y WhatsApp al mismo tiempo.";
+  div.appendChild(nota);
+
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+};
+</script>
+</body>
+</html>
